@@ -2,9 +2,11 @@ package com.jhl.admin.service;
 
 import com.jhl.admin.VO.UserVO;
 import com.jhl.admin.cache.DefendBruteForceAttackUser;
+import com.jhl.admin.constant.KVConstant;
 import com.jhl.admin.model.Account;
 import com.jhl.admin.model.User;
 import com.jhl.admin.repository.UserRepository;
+import com.jhl.admin.util.Utils;
 import com.jhl.admin.util.Validator;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -12,10 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -42,14 +41,30 @@ public class UserService {
     }
 
     public void adminReg(User user) {
+        addUser(user);
+        Account account = Account.builder().userId(user.getId()).build();
+        accountService.create(account);
+        StatService.createOrGetStat(account);
+    }
+
+    public void adminAddUser(User user,String connections,String months) {
+        addUser(user);
+        Account account = Account.builder().userId(user.getId()).build();
+        account.setMaxConnection(Integer.valueOf(connections));
+        Date date = new Date();
+        Date fromDate = Utils.formatDate(date, null);
+        if (account.getFromDate() == null) account.setFromDate(fromDate);
+        account.setToDate(Utils.getDateBy(fromDate, KVConstant.MONTH * Integer.parseInt(months), Calendar.DAY_OF_YEAR));
+        accountService.create(account);
+        StatService.createOrGetStat(account);
+    }
+
+    private void addUser(User user) {
         User exist = userRepository.findOne(Example.of(User.builder().email(user.getEmail()).build())).orElse(null);
         if (exist != null) {
             throw new RuntimeException("已经存在账号，如忘记密码请找回");
         }
         create(user);
-        Account account = Account.builder().userId(user.getId()).build();
-        accountService.create(account);
-        StatService.createOrGetStat(account);
     }
 
     public void changePassword(User user) {

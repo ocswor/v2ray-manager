@@ -1,5 +1,6 @@
 package com.jhl.admin.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.jhl.admin.Interceptor.PreAuth;
@@ -279,18 +280,21 @@ public class UserController {
     /**
      * admin -新增用户
      *
-     * @param user
+     * @param body
      * @return
      */
     @PreAuth("admin")
     @PostMapping("")
-    public Result addUser(@RequestBody UserVO user) {
+    public Result addUser(@RequestBody Map<String,String> body) {
+        UserVO user =JSON.parseObject(JSON.toJSONString(body), UserVO.class);
         Validator.isNotNull(user);
         if (StringUtils.isBlank(user.getRole())) {
             user.setRole("vip");
         }
         //   user.setPassword(DigestUtils.md5Hex(user.getPassword()));
-        userService.adminReg(user.toModel(User.class));
+        String connections = body.get("connections");
+        String months = body.get("months");
+        userService.adminAddUser(user.toModel(User.class),connections,months);
         return Result.doSuccess();
     }
 
