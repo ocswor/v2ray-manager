@@ -73,7 +73,7 @@ public class UserController {
         cookie.setMaxAge(60 * 60 * 12);
         cookie.setPath("/");
         // xss
-     //   cookie.setHttpOnly(true);
+        //   cookie.setHttpOnly(true);
         response.addCookie(cookie);
         userCache.setCache(cKey, userVO);
 
@@ -108,8 +108,8 @@ public class UserController {
             InvitationCode invitationCode = invitationCodeRepository.findOne(Example.of(InvitationCode.builder().inviteCode(inviteCode.trim()).status(0).build())).orElse(null);
             if (invitationCode == null) throw new NullPointerException("邀请码不正确/已使用");
             //已经过有效期
-            if (invitationCode.getEffectiveTime() != null && invitationCode.getEffectiveTime().before(new Date())){
-                throw  new IllegalArgumentException("邀请码已经过期");
+            if (invitationCode.getEffectiveTime() != null && invitationCode.getEffectiveTime().before(new Date())) {
+                throw new IllegalArgumentException("邀请码已经过期");
             }
         }
         UserVO userVO = userService.getOne(User.builder().email(email).build());
@@ -137,8 +137,8 @@ public class UserController {
             if (invitationCode == null) throw new NullPointerException("邀请码不正确/已使用");
             final Date effectiveTime = invitationCode.getEffectiveTime();
             //已经过有效期
-            if (effectiveTime != null && effectiveTime.before(new Date())){
-                throw  new IllegalArgumentException("邀请码已经过期");
+            if (effectiveTime != null && effectiveTime.before(new Date())) {
+                throw new IllegalArgumentException("邀请码已经过期");
             }
         }
 
@@ -168,15 +168,16 @@ public class UserController {
 
     /**
      * 使用原密码修改密码
+     *
      * @return
      */
     @PreAuth("vip")
     @PostMapping("/change-password")
-    public Result changePassword(@RequestBody ChangePasswordVO changePasswordVO ,@CookieValue(value = COOKIE_NAME, defaultValue = "") String auth) {
+    public Result changePassword(@RequestBody ChangePasswordVO changePasswordVO, @CookieValue(value = COOKIE_NAME, defaultValue = "") String auth) {
         Assert.notNull(changePasswordVO, "参数不能为空");
         UserVO user = userCache.getCache(auth);
         Integer id = user.getId();
-        userService.changePassword(id,changePasswordVO.getOldPassword(),changePasswordVO.getNewPassword());
+        userService.changePassword(id, changePasswordVO.getOldPassword(), changePasswordVO.getNewPassword());
         return Result.doSuccess();
     }
 
@@ -258,7 +259,7 @@ public class UserController {
     public Result deleteUser(@CookieValue(COOKIE_NAME) String auth, @PathVariable Integer id) {
         Validator.isNotNull(id);
         Validator.isNotNull(auth);
-        UserVO cacheUser =  userCache.getCache(auth);
+        UserVO cacheUser = userCache.getCache(auth);
         if (cacheUser.getId().equals(id)) throw new RuntimeException("不能修改自己账号");
 
         List<Account> accounts = accountRepository.findAll(Example.of(Account.builder().userId(id).build()));
@@ -285,16 +286,18 @@ public class UserController {
      */
     @PreAuth("admin")
     @PostMapping("")
-    public Result addUser(@RequestBody Map<String,String> body) {
-        UserVO user =JSON.parseObject(JSON.toJSONString(body), UserVO.class);
+    public Result addUser(@RequestBody Map<String, String> body) {
+        UserVO user = JSON.parseObject(JSON.toJSONString(body), UserVO.class);
         Validator.isNotNull(user);
         if (StringUtils.isBlank(user.getRole())) {
             user.setRole("vip");
         }
         //   user.setPassword(DigestUtils.md5Hex(user.getPassword()));
-        String connections = body.get("connections");
-        String months = body.get("months");
-        userService.adminAddUser(user.toModel(User.class),connections,months);
+        String connections = body.getOrDefault("connections","25");
+        String months = body.getOrDefault("months","1");
+        String speed = body.getOrDefault("speed","512");
+        String bandwidth = body.getOrDefault("bandwidth","5");
+        userService.adminAddUser(user.toModel(User.class), connections, months, speed,bandwidth);
         return Result.doSuccess();
     }
 

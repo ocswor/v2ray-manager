@@ -174,7 +174,7 @@ public class AccountController {
             }
             total = accountsPage.getTotalElements();
         } else {
-            accounts = accountRepository.findByUserEmail("%" + userEmail + "%");
+            accounts = accountRepository.findByUserEmailOrNickname("%" + userEmail + "%");
             total = accounts == null ? 0l : accounts.size();
         }
         List<AccountVO> accountVOList = BaseEntity.toVOList(accounts, AccountVO.class);

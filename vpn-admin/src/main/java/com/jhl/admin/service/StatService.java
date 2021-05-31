@@ -32,7 +32,7 @@ public class StatService {
                 Date maxToDate = account.getToDate();
                 Date nextCycleDate = Utils.getDateBy(fromDate,cycleNum, Calendar.DAY_OF_YEAR);
                     if (!maxToDate.after(fromDate)) return  null;
-                stat = new Stat();
+                 stat = new Stat();
                  stat.setAccountId(account.getId());
                  stat.setFromDate(fromDate);
                  stat.setToDate(nextCycleDate);

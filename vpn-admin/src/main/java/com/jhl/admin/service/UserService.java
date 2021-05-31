@@ -47,15 +47,15 @@ public class UserService {
         StatService.createOrGetStat(account);
     }
 
-    public void adminAddUser(User user,String connections,String months) {
+    /*
+    重载方法 创建用户的时候
+    支持 客户端配置的参数,并生成自动生成订阅链接
+     */
+    public void adminAddUser(User user, String connections, String months, String speed,String bandwidth) {
         addUser(user);
         Account account = Account.builder().userId(user.getId()).build();
-        account.setMaxConnection(Integer.valueOf(connections));
-        Date date = new Date();
-        Date fromDate = Utils.formatDate(date, null);
-        if (account.getFromDate() == null) account.setFromDate(fromDate);
-        account.setToDate(Utils.getDateBy(fromDate, KVConstant.MONTH * Integer.parseInt(months), Calendar.DAY_OF_YEAR));
-        accountService.create(account);
+        accountService.create(account, connections, months, speed,bandwidth);
+        accountService.generatorSubscriptionUrl(account.getId(),null);
         StatService.createOrGetStat(account);
     }
 

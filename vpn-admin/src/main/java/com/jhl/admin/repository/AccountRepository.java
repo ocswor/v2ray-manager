@@ -14,4 +14,7 @@ public interface AccountRepository extends  JpaRepository<Account,Integer> {
     List<Account> findByToDateAfter(Date date);
     @Query(value = "select a.* from account a join user u on a.user_id =u.id where u.email like ?1",nativeQuery = true)
     List<Account> findByUserEmail(String email);
+
+    @Query(value = "select a.* from account a join user u on a.user_id =u.id where u.email like ?1 or u.nick_name like ?1",nativeQuery = true)
+    List<Account> findByUserEmailOrNickname(String email);
 }

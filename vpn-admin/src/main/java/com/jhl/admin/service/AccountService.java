@@ -86,6 +86,33 @@ public class AccountService {
         return account;
     }
 
+
+    public Account create(Account account,String connections, String months, String speed,String bandwidth) {
+        Validator.isNotNull(account.getUserId());
+        Date date = new Date();
+        if (account.getBandwidth() == null) {
+            account.setBandwidth(Integer.valueOf(bandwidth));
+        }
+
+        account.setAccountNo(Utils.getCharAndNum(7));
+        //1024kb/S
+        if (account.getSpeed() == null) account.setSpeed(Long.parseLong(speed));
+
+        Date fromDate = Utils.formatDate(date, null);
+        if (account.getFromDate() == null) account.setFromDate(fromDate);
+        if (account.getCycle() == null) {
+            account.setCycle(KVConstant.MONTH);
+        }
+        if (account.getMaxConnection() == null) account.setMaxConnection(Integer.valueOf(connections));
+        if (account.getToDate() == null)
+            account.setToDate(Utils.getDateBy(fromDate, Integer.parseInt(months), Calendar.MONTH));
+        account.setStatus(1);
+        if (account.getLevel()==null) account.setLevel((short) 0);
+        accountRepository.save(account);
+
+        return account;
+    }
+
     /**
      * 更新账号的信息，不涉及服务器相关/content相关
      */
