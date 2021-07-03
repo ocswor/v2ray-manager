@@ -36,7 +36,7 @@ public class UserService {
         if (!emailService.verifyCode(user.getEmail(), user.getVCode())) {
             throw new IllegalArgumentException("验证码错误");
         }
-        adminAddUser(user,"25","1","512","5");
+        adminAddUser(user,"35","1","512","10");
     }
 
     public void adminReg(User user) {
